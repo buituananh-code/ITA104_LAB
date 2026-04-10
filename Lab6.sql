@@ -13,11 +13,11 @@ CREATE TABLE suppliers (
 );
 
 INSERT INTO suppliers (name, phone, address) VALUES
-('Công ty Sữa Việt Nam',   '028-3812-1111', 'Số 10 Tân Trào, Q.7, TP.HCM'),
-('Công ty Thực Phẩm Xanh', '024-3632-2222', 'Số 5 Giải Phóng, Hà Nội'),
-('Nhà Phân Phối ABC',      '0903-333-444',  'Số 88 Lê Lợi, Đà Nẵng'),
-('Công ty Hải Sản Biển',   '0911-555-666',  'Số 3 Trần Phú, Nha Trang'),
-('Trang Trại Hữu Cơ',      '0977-777-888',  'Số 20 Nguyễn Huệ, Cần Thơ');
+('Công ty Sữa Việt Nam',   '02838121111', 'Số 10 Tân Trào, Q.7, TP.HCM'),
+('Công ty Thực Phẩm Xanh', '02436322222', 'Số 5 Giải Phóng, Hà Nội'),
+('Nhà Phân Phối ABC',      '0903333444',  'Số 88 Lê Lợi, Đà Nẵng'),
+('Công ty Hải Sản Biển',   '0911555666',  'Số 3 Trần Phú, Nha Trang'),
+('Trang Trại Hữu Cơ',      '0977777888',  'Số 20 Nguyễn Huệ, Cần Thơ');
 
 CREATE TABLE customers (
     customer_id SERIAL PRIMARY KEY,
@@ -28,14 +28,14 @@ CREATE TABLE customers (
 );
 
 INSERT INTO customers (name, email, phone, address) VALUES
-('Nguyễn Văn An',   'an.nguyen@email.com',   '0901-111-001', 'Hà Nội'),
-('Trần Thị Bích',   'bich.tran@email.com',   '0902-222-002', 'TP.HCM'),
-('Lê Minh Cường',   'cuong.le@email.com',    '0903-333-003', 'Đà Nẵng'),
-('Phạm Thu Hà',     'ha.pham@email.com',     '0904-444-004', 'Hải Phòng'),
-('Hoàng Đức Minh',  'minh.hoang@email.com',  '0905-555-005', 'Cần Thơ'),
-('Vũ Thị Lan',      'lan.vu@email.com',      '0906-666-006', 'Huế'),
-('Bùi Thị Mai',     'mai.bui@email.com',     '0908-888-008', 'Vinh'),
-('Ngô Thanh Tùng',  'tung.ngo@email.com',    '0909-999-009', 'Buôn Ma Thuột');
+('Nguyễn Văn An',   'an.nguyen@email.com',   '0901111001', 'Hà Nội'),
+('Trần Thị Bích',   'bich.tran@email.com',   '0902222002', 'TP.HCM'),
+('Lê Minh Cường',   'cuong.le@email.com',    '0903333003', 'Đà Nẵng'),
+('Phạm Thu Hà',     'ha.pham@email.com',     '0904444004', 'Hải Phòng'),
+('Hoàng Đức Minh',  'minh.hoang@email.com',  '0905555005', 'Cần Thơ'),
+('Vũ Thị Lan',      'lan.vu@email.com',      '0906666006', 'Huế'),
+('Bùi Thị Mai',     'mai.bui@email.com',     '0908888008', 'Vinh'),
+('Ngô Thanh Tùng',  'tung.ngo@email.com',    '0909999009', 'Buôn Ma Thuột');
 
 CREATE TABLE products (
     product_id   SERIAL PRIMARY KEY,
@@ -69,14 +69,14 @@ CREATE TABLE orders (
 );
 
 INSERT INTO orders (customer_id, order_date, status) VALUES
-(1, '2025-10-01', 'completed'),
-(2, '2024-09-03', 'completed'),
-(3, '2025-10-05', 'completed'),
-(4, '2025-10-10', 'completed'),
-(5, '2025-10-12', 'completed'),
-(1, '2025-10-15', 'completed'),
-(6, '2025-01-18', 'completed'),
-(2, '2025-12-22', 'completed');
+(1, '2025/10/01', 'completed'),
+(2, '2024/09/03', 'completed'),
+(3, '2025/10/05', 'completed'),
+(4, '2025/10/10', 'completed'),
+(5, '2025/10/12', 'completed'),
+(1, '2025/10/15', 'completed'),
+(6, '2025/01/18', 'completed'),
+(2, '2025/12/22', 'completed');
 
 CREATE TABLE order_details (
     detail_id  SERIAL PRIMARY KEY,
@@ -106,38 +106,18 @@ INSERT INTO order_details (order_id, product_id, quantity, price) VALUES
 
 CREATE VIEW order_items AS SELECT * FROM order_details;
 
---Bài 1
-SELECT 
-    COUNT(*) AS SoLuongSanPham,
-    AVG(price) AS GiaTrungBinh,
-    MIN(price) AS GiaMin,
-    MAX(price) AS GiaMax
-FROM products;
+--LAB 7
+CREATE INDEX idx_customers_phone ON customers USING btree(phone);
 
---Bài 2
-SELECT 
-    suppliers.name,
-    COUNT(*) AS SoLuongSanPham
-FROM suppliers
-JOIN products ON suppliers.supplier_id = products.supplier_id
-GROUP BY suppliers.name
-HAVING COUNT(*) > 1;
+EXPLAIN ANALYZE
+SELECT * FROM customers WHERE phone = '0910099999';
 
---Bài 3
-SELECT 
-    order_id,
-    to_char(order_date, 'DD/MM/YYYY') AS NgayDatHang
-FROM orders
-WHERE extract(year from order_date) = 2025
-AND extract(month from order_date) = 10;
+EXPLAIN ANALYZE
+INSERT INTO customers (name, phone, address)
+VALUES ('Test Index User', '0999999999', '123 Test Index');
 
---Bài 4
-SELECT 
-    customers.name,
-    SUM(order_details.quantity * order_details.price) AS TongChiTieu
-FROM customers
-JOIN orders ON customers.customer_id = orders.customer_id
-JOIN order_details ON orders.order_id = order_details.order_id
-GROUP BY customers.name
-HAVING SUM(order_details.quantity * order_details.price) > 100000
-ORDER BY TongChiTieu DESC;
+CREATE INDEX idx_customers_address ON customers(address);
+
+EXPLAIN
+SELECT * FROM customers
+WHERE address = 'Address 500' OR phone_number LIKE '091001%';
